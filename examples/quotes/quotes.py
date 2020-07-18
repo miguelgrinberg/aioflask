@@ -19,3 +19,7 @@ async def index():
     <p><i>"{quote['content']}"</i> &mdash; {quote['author']}</p>
   </body>
 </html>'''
+
+
+if __name__ == '__main__':
+    app.run(debug=True)

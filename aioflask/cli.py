@@ -18,14 +18,8 @@ def show_server_banner(env, debug, app_import_path, eager_loading):
     """Show extra startup messages the first time the server is run,
     ignoring the reloader.
     """
-    #if os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-    #    return
-
     if app_import_path is not None:
         message = f" * Serving Flask app {app_import_path!r}"
-
-        #if not eager_loading:
-        #    message += " (lazy loading)"
 
         click.echo(message)
 
@@ -148,9 +142,7 @@ def run(
         keyfile = cert[1]
 
     show_server_banner(get_env(), debug, info.app_import_path, eager_loading)
-    #app = DispatchingApp(info.load_app, use_eager_loading=eager_loading)
 
-    #from werkzeug.serving import run_simple
     app_import_path = info.app_import_path
     if app_import_path.endswith('.py'):
         app_import_path = app_import_path[:-3] + ':app'
@@ -165,13 +157,9 @@ def run(
         ssl_certfile=certfile,
         ssl_keyfile=keyfile,
     )
-    #run_simple(
-    #    host,
-    #    port,
-    #    app,
-    #    use_reloader=reload,
-    #    use_debugger=debugger,
-    #    threaded=with_threads,
-    #    ssl_context=cert,
-    #    extra_files=extra_files,
-    #)
+
+    # currently not supported:
+    # - eager_loading
+    # - with_threads
+    # - adhoc certs
+    # - extra_files

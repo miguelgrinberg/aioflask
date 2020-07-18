@@ -150,7 +150,7 @@ class Flask(OriginalFlask):
         show_server_banner(self.env, self.debug, self.name, False)
 
         uvicorn.run(
-            'quotes:app', #self.import_name + ':app',
+            self.import_name + ':app',
             host=host,
             port=port,
             reload=options['use_reloader'],

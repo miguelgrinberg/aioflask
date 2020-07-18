@@ -1,4 +1,7 @@
 # aioflask
+
+[![Build Status](https://travis-ci.org/miguelgrinberg/aioflask.svg?branch=master)](https://travis-ci.org/miguelgrinberg/aioflask)
+
 Flask running on asyncio!
 
 WARNING: This is an experiment at this point. Not at all production ready!

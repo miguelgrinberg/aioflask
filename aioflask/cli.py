@@ -1,8 +1,7 @@
-import asyncio
 import os
 
-from flask.cli import pass_script_info, get_debug_flag, run_command, \
-    _validate_key, SeparatedPathType
+from flask.cli import pass_script_info, get_debug_flag, _validate_key, \
+    SeparatedPathType
 from flask.helpers import get_env
 from werkzeug.utils import import_string
 import click
@@ -38,15 +37,14 @@ class CertParamType(click.ParamType):
     name = "path"
 
     def __init__(self):
-        self.path_type = click.Path(exists=True, dir_okay=False, resolve_path=True)
+        self.path_type = click.Path(exists=True, dir_okay=False,
+                                    resolve_path=True)
 
     def convert(self, value, param, ctx):
         if ssl is None:
-            raise click.BadParameter(
-                'Using "--cert" requires Python to be compiled with SSL support.',
-                ctx,
-                param,
-            )
+            raise click.BadParameter('Using "--cert" requires Python to be '
+                                     'compiled with SSL support.',
+                                     ctx, param)
 
         try:
             return self.path_type(value, param, ctx)
@@ -54,11 +52,9 @@ class CertParamType(click.ParamType):
             value = click.STRING(value, param, ctx).lower()
 
             if value == "adhoc":
-                raise click.BadParameter(
-                    "Aad-hoc certificates are currently not supported by aioflask.",
-                    ctx,
-                    param,
-                )
+                raise click.BadParameter("Aad-hoc certificates are currently "
+                                         "not supported by aioflask.",
+                                         ctx, param)
 
                 return value
 
@@ -71,10 +67,12 @@ class CertParamType(click.ParamType):
 
 
 @click.command("run", short_help="Run a development server.")
-@click.option("--host", "-h", default="127.0.0.1", help="The interface to bind to.")
+@click.option("--host", "-h", default="127.0.0.1",
+              help="The interface to bind to.")
 @click.option("--port", "-p", default=5000, help="The port to bind to.")
 @click.option(
-    "--cert", type=CertParamType(), help="Specify a certificate file to use HTTPS."
+    "--cert", type=CertParamType(),
+    help="Specify a certificate file to use HTTPS."
 )
 @click.option(
     "--key",
@@ -116,9 +114,8 @@ class CertParamType(click.ParamType):
     ),
 )
 @pass_script_info
-def run(
-    info, host, port, reload, debugger, eager_loading, with_threads, cert, extra_files
-):
+def run(info, host, port, reload, debugger, eager_loading, with_threads, cert,
+        extra_files):
     """Run a local development server.
     This server is for development purposes only. It does not provide
     the stability, security, or performance of production WSGI servers.

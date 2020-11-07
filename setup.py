@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="aioflask",
-    version="0.0.1",
+    version="0.1.0",
     author="Miguel Grinberg",
     author_email="miguel.grinberg@gmail.com",
     description="Flask running on asyncio.",

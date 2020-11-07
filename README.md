@@ -8,23 +8,27 @@ WARNING: This is an experiment at this point. Not at all production ready!
 
 ## Quick start
 
-To use async view functions and other handlers, import the `Flask` class from
-`aioflask` instead of from `flask`. All other symbols should be imported from
-their original packages, be it `flask`, `werkzeug`, etc.
+To use async view functions and other handlers, use the `aioflask` package
+instead of `flask`.
 
 The `aioflask.Flask` class is a subclass of `flask.Flask` that changes a few
 minor things to help the application run properly under the asyncio loop. In
-particular, it does the following things:
+particular, it overrides the following aspects of the application instance:
 
-- It wraps any application handlers that are async functions with
-`greenletio.await_` so that they can be invoked as normal functions (while
-retaining their async properties).
-- It modifies the application and request context stacks so that context
-locals apply to async tasks instead of to system threads.
-- It replaces the WSGI callable with an ASGI callable
-- It overrides the `run()` method to use uvicorn as web server.
+- The `route`, `before_request`, `before_first_request`, `after_request`, 
+  `teardown_request`, `teardown_appcontext`, `errorhandler` and `cli.command`
+  decorators accept coroutines as well as regular functions. The handlers all
+  run inside an asyncio loop, so when using regular functions, care must be
+  taken to not block.
+- The WSGI callable entry point is replaced with an ASGI equivalent.
+- The `run()` method uses uvicorn as web server.
+- The `cli.command()` decorator accepts coroutines as well as regular
 
-The `flask run` command is also overriden to start the uvicorn web server.
+There are also changes outside of the `Flask` class:
+
+- The `flask run` command starts the uvicorn web server.
+- The `render_template()` function is asynchronous and must be awaited. The
+  sync render version is available as `render_template_sync()`.
 
 ## Example
 

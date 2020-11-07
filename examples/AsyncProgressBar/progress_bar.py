@@ -2,8 +2,7 @@ import asyncio
 import random
 import aioredis
 import redis
-from aioflask import Flask
-from flask import request, url_for, jsonify
+from aioflask import Flask, request, url_for, jsonify
 
 app = Flask(__name__)
 

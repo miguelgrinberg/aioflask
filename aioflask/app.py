@@ -8,7 +8,7 @@ from flask.helpers import get_debug_flag, get_env, get_load_dotenv
 from greenletio import await_
 import uvicorn
 from .asgi import WsgiToAsgiInstance
-from .cli import show_server_banner
+from .cli import show_server_banner, AppGroup
 
 
 def async_get_ident():
@@ -18,9 +18,11 @@ def async_get_ident():
 class Flask(OriginalFlask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.cli = AppGroup()
+        self.jinja_options['enable_async'] = True
         self.async_fixed = False
 
-    def async_to_sync(self, coro):
+    def _async_to_sync(self, coro):
         if not iscoroutinefunction(coro):
             return coro
 
@@ -44,37 +46,37 @@ class Flask(OriginalFlask):
         _request_ctx_stack.__ident_func__ = async_get_ident
 
         self.view_functions = {
-            name: self.async_to_sync(func)
+            name: self._async_to_sync(func)
             for name, func in self.view_functions.items()
         }
         for key in self.error_handler_spec:
             for code in self.error_handler_spec[key]:
                 self.error_handler_spec[key][code] = {
-                    exc_class: self.async_to_sync(func)
+                    exc_class: self._async_to_sync(func)
                     for exc_class, func in
                     self.error_handler_spec[key][code].items()
                 }
         for key in self.before_request_funcs:
             self.before_request_funcs[key] = [
-                self.async_to_sync(func)
+                self._async_to_sync(func)
                 for func in self.before_request_funcs[key]
             ]
         self.before_first_request_funcs = [
-            self.async_to_sync(func)
+            self._async_to_sync(func)
             for func in self.before_first_request_funcs
         ]
         for key in self.after_request_funcs:
             self.after_request_funcs[key] = [
-                self.async_to_sync(func)
+                self._async_to_sync(func)
                 for func in self.after_request_funcs[key]
             ]
         for key in self.teardown_request_funcs:
             self.teardown_request_funcs[key] = [
-                self.async_to_sync(func)
+                self._async_to_sync(func)
                 for func in self.teardown_request_funcs[key]
             ]
         self.teardown_appcontext_funcs = [
-            self.async_to_sync(func)
+            self._async_to_sync(func)
             for func in self.teardown_appcontext_funcs
         ]
 

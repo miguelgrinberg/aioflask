@@ -1,5 +1,5 @@
 import unittest
-# from aioflask import Flask
+from aioflask import Flask
 
 
 class TestAioflask(unittest.TestCase):

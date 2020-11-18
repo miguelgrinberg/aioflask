@@ -1,6 +1,6 @@
 # aioflask
 
-![Build status](https://github.com/miguelgrinberg/aioflask/workflows/Tests/badge.svg) [![codecov](https://codecov.io/gh/miguelgrinberg/aioflask/branch/master/graph/badge.svg?token=CDMKF3L0ID)](https://codecov.io/gh/miguelgrinberg/aioflask)
+![Build status](https://github.com/miguelgrinberg/aioflask/workflows/build/badge.svg) [![codecov](https://codecov.io/gh/miguelgrinberg/aioflask/branch/master/graph/badge.svg?token=CDMKF3L0ID)](https://codecov.io/gh/miguelgrinberg/aioflask)
 
 Flask running on asyncio!
 

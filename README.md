@@ -22,7 +22,6 @@ particular, it overrides the following aspects of the application instance:
   taken to not block.
 - The WSGI callable entry point is replaced with an ASGI equivalent.
 - The `run()` method uses uvicorn as web server.
-- The `cli.command()` decorator accepts coroutines as well as regular
 
 There are also changes outside of the `Flask` class:
 

@@ -22,18 +22,18 @@ class Flask(OriginalFlask):
         self.jinja_options['enable_async'] = True
         self.async_fixed = False
 
-    def _async_to_sync(self, coro):
-        if not iscoroutinefunction(coro):
-            return coro
+    def ensure_sync(self, func):
+        if not iscoroutinefunction(func):
+            return func
 
-        @wraps(coro)
+        @wraps(func)
         def decorated(*args, **kwargs):
             reqctx = _request_ctx_stack.top.copy()
 
             @await_
             async def _coro():
                 with reqctx:
-                    return await coro(*args, **kwargs)
+                    return await func(*args, **kwargs)
 
             return _coro()
 
@@ -45,41 +45,6 @@ class Flask(OriginalFlask):
         _app_ctx_stack.__ident_func__ = async_get_ident
         _request_ctx_stack.__ident_func__ = async_get_ident
 
-        self.view_functions = {
-            name: self._async_to_sync(func)
-            for name, func in self.view_functions.items()
-        }
-        for key in self.error_handler_spec:
-            for code in self.error_handler_spec[key]:
-                self.error_handler_spec[key][code] = {
-                    exc_class: self._async_to_sync(func)
-                    for exc_class, func in
-                    self.error_handler_spec[key][code].items()
-                }
-        for key in self.before_request_funcs:
-            self.before_request_funcs[key] = [
-                self._async_to_sync(func)
-                for func in self.before_request_funcs[key]
-            ]
-        self.before_first_request_funcs = [
-            self._async_to_sync(func)
-            for func in self.before_first_request_funcs
-        ]
-        for key in self.after_request_funcs:
-            self.after_request_funcs[key] = [
-                self._async_to_sync(func)
-                for func in self.after_request_funcs[key]
-            ]
-        for key in self.teardown_request_funcs:
-            self.teardown_request_funcs[key] = [
-                self._async_to_sync(func)
-                for func in self.teardown_request_funcs[key]
-            ]
-        self.teardown_appcontext_funcs = [
-            self._async_to_sync(func)
-            for func in self.teardown_appcontext_funcs
-        ]
-
         if os.environ.get('AIOFLASK_USE_DEBUGGER') == 'true':
             os.environ['WERKZEUG_RUN_MAIN'] = 'true'
             from werkzeug.debug import DebuggedApplication
@@ -90,7 +55,11 @@ class Flask(OriginalFlask):
             self._fix_async()
         return await WsgiToAsgiInstance(self.wsgi_app)(scope, receive, send)
 
-    async def __call__(self, scope, receive, send):
+    async def __call__(self, scope, receive, send=None):
+        if send is None:
+            # we were called with two arguments, so this is likely a WSGI app
+            raise RuntimeError('The WSGI interface is not supported by '
+                               'aioflask, use an ASGI web server instead.')
         return await self.asgi_app(scope, receive, send)
 
     def run(self, host=None, port=None, debug=None, load_dotenv=True,

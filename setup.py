@@ -15,7 +15,7 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires=[
         'greenletio',
-        'flask',
+        'flask>=2.0.0rc1',
         'uvicorn',
     ],
     entry_points={

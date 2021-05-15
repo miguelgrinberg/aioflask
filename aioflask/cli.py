@@ -4,6 +4,8 @@ import os
 import sys
 
 from flask.cli import *
+from flask.cli import AppGroup, ScriptInfo, update_wrapper, \
+    SeparatedPathType, pass_script_info, get_debug_flag
 from flask.cli import _validate_key
 from flask.globals import _app_ctx_stack
 from flask.helpers import get_env
@@ -20,28 +22,25 @@ except ImportError:
 OriginalAppGroup = AppGroup
 
 
-def _async_to_sync(coro, with_appcontext):
-    if not iscoroutinefunction(coro):
-        return coro
+def _ensure_sync(func, with_appcontext):
+    if not iscoroutinefunction(func):
+        return func
 
-    @wraps(coro)
+    @wraps(func)
     def decorated(*args, **kwargs):
-        appctx = None
         if with_appcontext:
             appctx = _app_ctx_stack.top
 
             @await_
             async def _coro():
                 with appctx:
-                    return await coro(*args, **kwargs)
-
-            return _coro()
+                    return await func(*args, **kwargs)
         else:
             @await_
             async def _coro():
-                return await coro(*args, **kwargs)
+                return await func(*args, **kwargs)
 
-            return _coro()
+        return _coro()
 
     return decorated
 
@@ -56,7 +55,7 @@ def with_appcontext(f):
     @click.pass_context
     def decorator(__ctx, *args, **kwargs):
         with __ctx.ensure_object(ScriptInfo).load_app().app_context():
-            return __ctx.invoke(_async_to_sync(f, True), *args, **kwargs)
+            return __ctx.invoke(_ensure_sync(f, True), *args, **kwargs)
 
     return update_wrapper(decorator, f)
 

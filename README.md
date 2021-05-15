@@ -2,7 +2,7 @@
 
 ![Build status](https://github.com/miguelgrinberg/aioflask/workflows/build/badge.svg) [![codecov](https://codecov.io/gh/miguelgrinberg/aioflask/branch/master/graph/badge.svg?token=CDMKF3L0ID)](https://codecov.io/gh/miguelgrinberg/aioflask)
 
-Flask running on asyncio!
+Flask 2.x running on asyncio!
 
 WARNING: This is an experiment at this point. Not at all production ready!
 
@@ -33,12 +33,12 @@ There are also changes outside of the `Flask` class:
 
 ```python
 import asyncio
-from aioflask import Flask
+from aioflask import Flask, render_template
 
 app = Flask(__name__)
 
 @app.route('/')
 async def index():
     await asyncio.sleep(1)
-    return "Look Ma, I'm async!"
+    return await render_template('index.html')
 ```

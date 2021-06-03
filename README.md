@@ -1,8 +1,14 @@
 # aioflask
 
-![Build status](https://github.com/miguelgrinberg/aioflask/workflows/build/badge.svg) [![codecov](https://codecov.io/gh/miguelgrinberg/aioflask/branch/master/graph/badge.svg?token=CDMKF3L0ID)](https://codecov.io/gh/miguelgrinberg/aioflask)
+![Build status](https://github.com/miguelgrinberg/aioflask/workflows/build/badge.svg) [![codecov](https://codecov.io/gh/miguelgrinberg/aioflask/branch/main/graph/badge.svg?token=CDMKF3L0ID)](https://codecov.io/gh/miguelgrinberg/aioflask)
 
 Flask 2.x running on asyncio!
+
+Is there a purpose for this, now that Flask 2.0 is out with support for async
+views? Yes! Flask's own support for async handlers is very limited, as the
+application still runs inside a WSGI web server, which severely limits
+scalability. With aioflask you get a true ASGI application, running in a 100%
+async environment.
 
 WARNING: This is an experiment at this point. Not at all production ready!
 
@@ -25,7 +31,8 @@ particular, it overrides the following aspects of the application instance:
 
 There are also changes outside of the `Flask` class:
 
-- The `flask run` command starts the uvicorn web server.
+- The `flask aiorun` command starts an ASGI application using the uvicorn web
+  server.
 - The `render_template()` function is asynchronous and must be awaited. The
   sync render version is available as `render_template_sync()`.
 

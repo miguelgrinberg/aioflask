@@ -3,7 +3,7 @@ from tempfile import SpooledTemporaryFile
 from greenletio import async_, await_
 
 
-class wsgi_to_asgi:
+class wsgi_to_asgi:  # pragma: no cover
     """Wraps a WSGI application to make it into an ASGI application."""
 
     def __init__(self, wsgi_application):
@@ -18,7 +18,7 @@ class wsgi_to_asgi:
         await WsgiToAsgiInstance(self.wsgi_application)(scope, receive, send)
 
 
-class WsgiToAsgiInstance:
+class WsgiToAsgiInstance:  # pragma: no cover
     """Per-socket instance of a wrapped WSGI application"""
 
     def __init__(self, wsgi_application):

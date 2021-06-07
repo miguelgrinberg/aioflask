@@ -5,14 +5,11 @@ import os
 from flask import Flask as OriginalFlask, cli
 from flask.globals import _app_ctx_stack, _request_ctx_stack
 from flask.helpers import get_debug_flag, get_env, get_load_dotenv
-from greenletio import await_
+from greenletio import await_, async_
 import uvicorn
 from .asgi import WsgiToAsgiInstance
 from .cli import show_server_banner, AppGroup
-
-
-def async_get_ident():
-    return asyncio.current_task()
+from .testing import FlaskClient
 
 
 class Flask(OriginalFlask):
@@ -20,6 +17,7 @@ class Flask(OriginalFlask):
         super().__init__(*args, **kwargs)
         self.cli = AppGroup()
         self.jinja_options['enable_async'] = True
+        self.test_client_class = FlaskClient
         self.async_fixed = False
 
     def ensure_sync(self, func):
@@ -30,32 +28,28 @@ class Flask(OriginalFlask):
         def decorated(*args, **kwargs):
             reqctx = _request_ctx_stack.top.copy()
 
-            @await_
             async def _coro():
                 with reqctx:
                     return await func(*args, **kwargs)
 
-            return _coro()
+            return await_(_coro())
 
         return decorated
 
-    def _fix_async(self):
+    def _fix_async(self):  # pragma: no cover
         self.async_fixed = True
-
-        _app_ctx_stack.__ident_func__ = async_get_ident
-        _request_ctx_stack.__ident_func__ = async_get_ident
 
         if os.environ.get('AIOFLASK_USE_DEBUGGER') == 'true':
             os.environ['WERKZEUG_RUN_MAIN'] = 'true'
             from werkzeug.debug import DebuggedApplication
             self.wsgi_app = DebuggedApplication(self.wsgi_app, evalex=True)
 
-    async def asgi_app(self, scope, receive, send):
+    async def asgi_app(self, scope, receive, send):  # pragma: no cover
         if not self.async_fixed:
             self._fix_async()
         return await WsgiToAsgiInstance(self.wsgi_app)(scope, receive, send)
 
-    async def __call__(self, scope, receive, send=None):
+    async def __call__(self, scope, receive, send=None):  # pragma: no cover
         if send is None:
             # we were called with two arguments, so this is likely a WSGI app
             raise RuntimeError('The WSGI interface is not supported by '
@@ -101,6 +95,7 @@ class Flask(OriginalFlask):
         options.setdefault("use_reloader", self.debug)
         options.setdefault("use_debugger", self.debug)
         options.setdefault("threaded", True)
+        options.setdefault("workers", 1)
 
         certfile = None
         keyfile = None
@@ -125,7 +120,7 @@ class Flask(OriginalFlask):
             host=host,
             port=port,
             reload=options['use_reloader'],
-            workers=1,
+            workers=options['workers'],
             log_level='debug' if self.debug else 'info',
             ssl_certfile=certfile,
             ssl_keyfile=keyfile,

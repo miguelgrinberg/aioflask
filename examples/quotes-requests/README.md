@@ -8,4 +8,4 @@ This example shows how you can incorporate blocking code into your aioflask
 application without blocking the asyncio loop. 
 
 To run this example, set `FLASK_APP=quotes.py` in your environment and then use
-the standard `flask run` command to start the server.
+the standard `flask aiorun` command to start the server.

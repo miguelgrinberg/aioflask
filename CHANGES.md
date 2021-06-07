@@ -1,5 +1,12 @@
 # aioflask change log
 
+**Release 0.3.0** - 2021-06-07
+
+- Test client support, and some more unit tests ([commit](https://github.com/miguelgrinberg/aioflask/commit/c765e12f6382d685bbec1861dac062c13d63aea3))
+- Started a change log ([commit](https://github.com/miguelgrinberg/aioflask/commit/e6f4c3a87964fb2e5ea3f4464853c2a1d5ecfc29))
+- Improved example code ([commit](https://github.com/miguelgrinberg/aioflask/commit/496ce73f3f0ecb1bdbdd25bd957ce08e6742c191))
+- One more example ([commit](https://github.com/miguelgrinberg/aioflask/commit/7edab525809f7ba19562f67bb363a033563d6158))
+
 **Release 0.2.0** - 2021-05-15
 
 - Flask 2.x changes ([commit](https://github.com/miguelgrinberg/aioflask/commit/52aef31fb9a7f8fe6a54b156fe257db1300c0ca6))

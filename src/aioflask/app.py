@@ -24,17 +24,27 @@ class Flask(OriginalFlask):
         if not iscoroutinefunction(func):
             return func
 
-        @wraps(func)
-        def decorated(*args, **kwargs):
-            reqctx = _request_ctx_stack.top.copy()
+        def wrapped(*args, **kwargs):
+            appctx = _app_ctx_stack.top
+            reqctx = _request_ctx_stack.top
+            if reqctx:
+                reqctx = reqctx.copy()
 
             async def _coro():
-                with reqctx:
-                    return await func(*args, **kwargs)
+                # app context is push internally to avoid changing reference
+                # counts and emitting duplicate signals
+                _app_ctx_stack.push(appctx)
+                if reqctx:
+                    reqctx.push()
+                ret = await func(*args, **kwargs)
+                if reqctx:
+                    reqctx.pop()
+                _app_ctx_stack.pop()
+                return ret
 
             return await_(_coro())
 
-        return decorated
+        return wrapped
 
     def _fix_async(self):  # pragma: no cover
         self.async_fixed = True

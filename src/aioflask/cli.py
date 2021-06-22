@@ -16,7 +16,7 @@ import uvicorn
 
 try:
     import ssl
-except ImportError:
+except ImportError:  # pragma: no cover
     ssl = None
 
 OriginalAppGroup = AppGroup
@@ -26,7 +26,6 @@ def _ensure_sync(func, with_appcontext):
     if not iscoroutinefunction(func):
         return func
 
-    @wraps(func)
     def decorated(*args, **kwargs):
         if with_appcontext:
             appctx = _app_ctx_stack.top

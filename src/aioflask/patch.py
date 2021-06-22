@@ -45,6 +45,6 @@ def patch_decorator_method_with_args(class_, method_name):
             def ensure_sync(*a, **kw):
                 return current_app.ensure_sync(f)(*a, **kw)
 
-            return original_decorator(*args, **kwargs)(self, ensure_sync)
+            return original_decorator(self, *args, **kwargs)(ensure_sync)
         return inner_patched_decorator_method
     return patched_decorator_method

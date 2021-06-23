@@ -5,7 +5,7 @@ import sys
 
 from flask.cli import *
 from flask.cli import AppGroup, ScriptInfo, update_wrapper, \
-    SeparatedPathType, pass_script_info, get_debug_flag
+    SeparatedPathType, pass_script_info, get_debug_flag, NoAppException
 from flask.cli import _validate_key
 from flask.globals import _app_ctx_stack
 from flask.helpers import get_env
@@ -22,7 +22,7 @@ except ImportError:  # pragma: no cover
 OriginalAppGroup = AppGroup
 
 
-def _ensure_sync(func, with_appcontext):
+def _ensure_sync(func, with_appcontext=False):
     if not iscoroutinefunction(func):
         return func
 
@@ -76,7 +76,7 @@ class AppGroup(OriginalAppGroup):
         def decorator(f):
             if wrap_for_ctx:
                 f = with_appcontext(f)
-            return click.Group.command(self, *args, **kwargs)(f)
+            return click.Group.command(self, *args, **kwargs)(_ensure_sync(f))
 
         return decorator
 
@@ -182,8 +182,8 @@ class CertParamType(click.ParamType):
     ),
 )
 @pass_script_info
-def run(info, host, port, reload, debugger, eager_loading, with_threads, cert,
-        extra_files):
+def run_command(info, host, port, reload, debugger, eager_loading,
+                with_threads, cert, extra_files):
     """Run a local development server.
     This server is for development purposes only. It does not provide
     the stability, security, or performance of production WSGI servers.
@@ -216,6 +216,12 @@ def run(info, host, port, reload, debugger, eager_loading, with_threads, cert,
                 if sys.path[0] != '.':
                     sys.path.insert(0, '.')
                 break
+        if app_import_path is None:
+            raise NoAppException(
+                "Could not locate a Flask application. You did not provide "
+                'the "FLASK_APP" environment variable, and a "wsgi.py" or '
+                '"app.py" module was not found in the current directory.'
+            )
     if app_import_path.endswith('.py'):
         app_import_path = app_import_path[:-3] + ':app'
 

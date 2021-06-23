@@ -1,6 +1,4 @@
-import asyncio
 import unittest
-from unittest import mock
 import aioflask
 import aioflask.patch
 

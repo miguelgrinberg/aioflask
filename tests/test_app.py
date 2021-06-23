@@ -1,8 +1,8 @@
 import asyncio
+import os
 import unittest
 from unittest import mock
 import aioflask
-import aioflask.patch
 
 
 class TestApp(unittest.TestCase):
@@ -95,15 +95,13 @@ class TestApp(unittest.TestCase):
                                        reload=True, workers=1,
                                        log_level='debug', ssl_certfile=None,
                                        ssl_keyfile=None)
-        app.run(debug=True)
-        uvicorn.run.assert_called_with('tests.test_app:app',
-                                       host='127.0.0.1', port=5000,
-                                       reload=True, workers=1,
-                                       log_level='debug', ssl_certfile=None,
-                                       ssl_keyfile=None)
         app.run(debug=True, use_reloader=False)
         uvicorn.run.assert_called_with('tests.test_app:app',
                                        host='127.0.0.1', port=5000,
                                        reload=False, workers=1,
                                        log_level='debug', ssl_certfile=None,
                                        ssl_keyfile=None)
+        if 'FLASK_DEBUG' in os.environ:
+            del os.environ['FLASK_DEBUG']
+        if 'AIOFLASK_USE_DEBUGGER' in os.environ:
+            del os.environ['AIOFLASK_USE_DEBUGGER']

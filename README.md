@@ -33,8 +33,8 @@ There are also changes outside of the `Flask` class:
 
 - The `flask aiorun` command starts an ASGI application using the uvicorn web
   server.
-- The `render_template()` function is asynchronous and must be awaited. The
-  sync render version is available as `render_template_sync()`.
+- The `render_template()` and `render_template_string()` functions are
+  asynchronous and must be awaited.
 
 ## Example
 

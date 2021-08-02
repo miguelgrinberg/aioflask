@@ -1,9 +1,6 @@
 from flask.templating import *
-from flask.templating import render_template, render_template_string, \
-    _app_ctx_stack, before_render_template, template_rendered
-
-render_template_sync = render_template
-render_template_string_sync = render_template_string
+from flask.templating import _app_ctx_stack, before_render_template, \
+    template_rendered
 
 
 async def _render(template, context, app):

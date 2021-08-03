@@ -225,8 +225,16 @@ def run_command(info, host, port, reload, debugger, eager_loading,
     if app_import_path.endswith('.py'):
         app_import_path = app_import_path[:-3] + ':app'
 
+    factory = False
+    if app_import_path.endswith('()'):
+        # TODO: this needs to be expanded to accept arguments for the factory
+        # function
+        app_import_path = app_import_path[:-2]
+        factory = True
+
     uvicorn.run(
         app_import_path,
+        factory=factory,
         host=host,
         port=port,
         reload=reload,

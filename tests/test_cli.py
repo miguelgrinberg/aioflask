@@ -55,7 +55,7 @@ class TestCli(unittest.TestCase):
 
         result = CliRunner().invoke(aioflask.cli.run_command, obj=obj)
         assert result.exit_code == 0
-        uvicorn.run.assert_called_with('app:app',
+        uvicorn.run.assert_called_with('app:app', factory=False,
                                        host='127.0.0.1', port=5000,
                                        reload=False, workers=1,
                                        log_level='info', ssl_certfile=None,
@@ -63,7 +63,7 @@ class TestCli(unittest.TestCase):
         result = CliRunner().invoke(aioflask.cli.run_command,
                                     '--host 1.2.3.4 --port 3000', obj=obj)
         assert result.exit_code == 0
-        uvicorn.run.assert_called_with('app:app',
+        uvicorn.run.assert_called_with('app:app', factory=False,
                                        host='1.2.3.4', port=3000,
                                        reload=False, workers=1,
                                        log_level='info', ssl_certfile=None,
@@ -71,7 +71,7 @@ class TestCli(unittest.TestCase):
         os.environ['FLASK_DEBUG'] = 'true'
         result = CliRunner().invoke(aioflask.cli.run_command, obj=obj)
         assert result.exit_code == 0
-        uvicorn.run.assert_called_with('app:app',
+        uvicorn.run.assert_called_with('app:app', factory=False,
                                        host='127.0.0.1', port=5000,
                                        reload=True, workers=1,
                                        log_level='debug', ssl_certfile=None,
@@ -80,7 +80,7 @@ class TestCli(unittest.TestCase):
         result = CliRunner().invoke(aioflask.cli.run_command, '--no-reload',
                                     obj=obj)
         assert result.exit_code == 0
-        uvicorn.run.assert_called_with('app:app',
+        uvicorn.run.assert_called_with('app:app', factory=False,
                                        host='127.0.0.1', port=5000,
                                        reload=False, workers=1,
                                        log_level='debug', ssl_certfile=None,
@@ -90,3 +90,17 @@ class TestCli(unittest.TestCase):
             del os.environ['FLASK_DEBUG']
         if 'AIOFLASK_USE_DEBUGGER' in os.environ:
             del os.environ['AIOFLASK_USE_DEBUGGER']
+
+    @mock.patch('aioflask.cli.uvicorn')
+    def test_aiorun_with_factory(self, uvicorn):
+        app = aioflask.Flask('testapp')
+        obj = aioflask.cli.ScriptInfo(app_import_path='app:create_app()',
+                                      create_app=lambda: app)
+
+        result = CliRunner().invoke(aioflask.cli.run_command, obj=obj)
+        assert result.exit_code == 0
+        uvicorn.run.assert_called_with('app:create_app', factory=True,
+                                       host='127.0.0.1', port=5000,
+                                       reload=False, workers=1,
+                                       log_level='info', ssl_certfile=None,
+                                       ssl_keyfile=None)

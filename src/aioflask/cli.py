@@ -5,7 +5,8 @@ import sys
 
 from flask.cli import *
 from flask.cli import AppGroup, ScriptInfo, update_wrapper, \
-    SeparatedPathType, pass_script_info, get_debug_flag, NoAppException
+    SeparatedPathType, pass_script_info, get_debug_flag, NoAppException, \
+    prepare_import
 from flask.cli import _validate_key
 from flask.globals import _app_ctx_stack
 from flask.helpers import get_env
@@ -212,9 +213,7 @@ def run_command(info, host, port, reload, debugger, eager_loading,
     if app_import_path is None:
         for path in ('wsgi', 'app'):
             if os.path.exists(path) or os.path.exists(path + '.py'):
-                app_import_path = path + ':app'
-                if sys.path[0] != '.':
-                    sys.path.insert(0, '.')
+                app_import_path = import_name + ':app'
                 break
         if app_import_path is None:
             raise NoAppException(
@@ -232,8 +231,14 @@ def run_command(info, host, port, reload, debugger, eager_loading,
         app_import_path = app_import_path[:-2]
         factory = True
 
+    if ':' not in app_import_path:
+        app_import_path += ':app'
+
+    import_name, app_name = app_import_path.split(':')
+    import_name = prepare_import(import_name)
+
     uvicorn.run(
-        app_import_path,
+        import_name + ':' + app_name,
         factory=factory,
         host=host,
         port=port,

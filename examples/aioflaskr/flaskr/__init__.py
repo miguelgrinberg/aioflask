@@ -1,7 +1,7 @@
 import os
 
 import click
-from aioflask import Flask
+from aioflask import Flask, g
 from aioflask.cli import with_appcontext
 from alchemical.aioflask import Alchemical
 
@@ -37,8 +37,9 @@ def create_app(test_config=None):
         # load the test config if passed in
         app.config.update(test_config)
 
-    # initialize Flask-SQLAlchemy and the init-db command
+    # initialize Alchemical and the init-db command
     db.init_app(app)
+    app.teardown_appcontext(close_dbsession)
     app.cli.add_command(init_db_command)
 
     # apply the blueprints to the app
@@ -56,6 +57,18 @@ def create_app(test_config=None):
 async def init_db():
     await db.drop_all()
     await db.create_all()
+
+
+def get_dbsession():
+    if 'dbsession' not in g:
+        g.dbsession = db.session()
+    return g.dbsession
+
+
+async def close_dbsession(e=None):
+    dbsession = g.pop('dbsession', None)
+    if dbsession is not None:
+        await dbsession.close()
 
 
 @click.command("init-db")

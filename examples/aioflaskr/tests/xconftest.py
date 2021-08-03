@@ -40,7 +40,7 @@ def app():
                         ),
                     )
                 )
-                dbsession.commit()
+                await dbsession.commit()
     await_(initialize_database())
 
     yield app

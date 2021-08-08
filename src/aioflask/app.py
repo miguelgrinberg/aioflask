@@ -2,13 +2,16 @@ import asyncio
 from functools import wraps
 from inspect import iscoroutinefunction
 import os
-from flask import Flask as OriginalFlask, cli
+from flask.app import *
+from flask.app import Flask as OriginalFlask
+from flask import cli
 from flask.globals import _app_ctx_stack, _request_ctx_stack
 from flask.helpers import get_debug_flag, get_env, get_load_dotenv
 from greenletio import await_, async_
 import uvicorn
 from .asgi import WsgiToAsgiInstance
 from .cli import show_server_banner, AppGroup
+from .ctx import AppContext
 from .testing import FlaskClient
 
 
@@ -45,6 +48,9 @@ class Flask(OriginalFlask):
             return await_(_coro())
 
         return wrapped
+
+    def app_context(self):
+        return AppContext(self)
 
     def _fix_async(self):  # pragma: no cover
         self.async_fixed = True

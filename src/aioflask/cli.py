@@ -213,7 +213,7 @@ def run_command(info, host, port, reload, debugger, eager_loading,
     if app_import_path is None:
         for path in ('wsgi', 'app'):
             if os.path.exists(path) or os.path.exists(path + '.py'):
-                app_import_path = import_name + ':app'
+                app_import_path = path + ':app'
                 break
         if app_import_path is None:
             raise NoAppException(

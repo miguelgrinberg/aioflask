@@ -213,7 +213,7 @@ def run_command(info, host, port, reload, debugger, eager_loading,
     if app_import_path is None:
         for path in ('wsgi', 'app'):
             if os.path.exists(path) or os.path.exists(path + '.py'):
-                app_import_path = path + ':app'
+                app_import_path = path
                 break
         if app_import_path is None:
             raise NoAppException(
@@ -222,7 +222,7 @@ def run_command(info, host, port, reload, debugger, eager_loading,
                 '"app.py" module was not found in the current directory.'
             )
     if app_import_path.endswith('.py'):
-        app_import_path = app_import_path[:-3] + ':app'
+        app_import_path = app_import_path[:-3]
 
     factory = False
     if app_import_path.endswith('()'):

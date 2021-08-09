@@ -14,7 +14,7 @@ class User(UserMixin):
 
 
 @login.user_loader
-def load_user(user_id):
+async def load_user(user_id):
     return User(user_id)
 
 

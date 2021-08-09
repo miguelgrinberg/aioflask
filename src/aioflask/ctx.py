@@ -21,9 +21,7 @@ class AppContext(OriginalAppContext):
                 @async_
                 def do_teardown_async():
                     _app_ctx_stack.push(self)
-                    print(4, self.app)
                     self.app.do_teardown_appcontext(exc)
-                    print(6)
                     _app_ctx_stack.pop()
 
                 await do_teardown_async()

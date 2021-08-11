@@ -12,7 +12,7 @@ import uvicorn
 from .asgi import WsgiToAsgiInstance
 from .cli import show_server_banner, AppGroup
 from .ctx import AppContext
-from .testing import FlaskClient
+from .testing import FlaskClient, FlaskCliRunner
 
 
 class Flask(OriginalFlask):
@@ -21,6 +21,7 @@ class Flask(OriginalFlask):
         self.cli = AppGroup()
         self.jinja_options['enable_async'] = True
         self.test_client_class = FlaskClient
+        self.test_cli_runner_class = FlaskCliRunner
         self.async_fixed = False
 
     def ensure_sync(self, func):

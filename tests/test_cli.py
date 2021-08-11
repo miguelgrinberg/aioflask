@@ -5,45 +5,44 @@ import click
 from click.testing import CliRunner
 import aioflask
 import aioflask.cli
+from .utils import async_test
 
 
 class TestCli(unittest.TestCase):
-    def test_command_with_appcontext(runner):
+    @async_test
+    async def test_command_with_appcontext(self):
         app = aioflask.Flask('testapp')
 
         @app.cli.command(with_appcontext=True)
         async def testcmd():
             click.echo(aioflask.current_app.name)
 
-        obj = aioflask.cli.ScriptInfo(create_app=lambda: app)
-
-        result = CliRunner().invoke(testcmd, obj=obj)
+        result = await app.test_cli_runner().invoke(testcmd)
         assert result.exit_code == 0
         assert result.output == "testapp\n"
 
-    def test_command_without_appcontext(runner):
+    @async_test
+    async def test_command_without_appcontext(self):
         app = aioflask.Flask('testapp')
 
         @app.cli.command(with_appcontext=False)
         async def testcmd():
             click.echo(aioflask.current_app.name)
 
-        obj = aioflask.cli.ScriptInfo(create_app=lambda: app)
-
-        result = CliRunner().invoke(testcmd, obj=obj)
+        result = await app.test_cli_runner().invoke(testcmd)
         assert result.exit_code == 1
         assert type(result.exception) == RuntimeError
 
-    def test_with_appcontext(runner):
+    @async_test
+    async def test_with_appcontext(self):
         @click.command()
         @aioflask.cli.with_appcontext
         async def testcmd():
             click.echo(aioflask.current_app.name)
 
-        obj = aioflask.cli.ScriptInfo(
-            create_app=lambda: aioflask.Flask('testapp'))
+        app = aioflask.Flask('testapp')
 
-        result = CliRunner().invoke(testcmd, obj=obj)
+        result = await app.test_cli_runner().invoke(testcmd)
         assert result.exit_code == 0
         assert result.output == "testapp\n"
 

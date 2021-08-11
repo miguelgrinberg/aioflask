@@ -1,10 +1,12 @@
 import unittest
 import aioflask
 import aioflask.patch
+from .utils import async_test
 
 
 class TestPatch(unittest.TestCase):
-    def test_decorator(self):
+    @async_test
+    async def test_decorator(self):
         def foo(f):
             def decorator(*args, **kwargs):
                 return f(*args, **kwargs) + '-decorated'
@@ -20,13 +22,12 @@ class TestPatch(unittest.TestCase):
         async def abc(id):
             return str(id)
 
-        app._fix_async()
-
         client = app.test_client()
-        response = client.get('/abc/123')
+        response = await client.get('/abc/123')
         assert response.data == b'123-decorated'
 
-    def test_decorator_with_args(self):
+    @async_test
+    async def test_decorator_with_args(self):
         def foo(value):
             def inner_foo(f):
                 def decorator(*args, **kwargs):
@@ -44,13 +45,12 @@ class TestPatch(unittest.TestCase):
         async def abc(id):
             return str(id)
 
-        app._fix_async()
-
         client = app.test_client()
-        response = client.get('/abc/123')
+        response = await client.get('/abc/123')
         assert response.data == b'123456'
 
-    def test_decorator_method(self):
+    @async_test
+    async def test_decorator_method(self):
         class Foo:
             def __init__(self, value):
                 self.value = value
@@ -71,13 +71,12 @@ class TestPatch(unittest.TestCase):
         async def abc(id):
             return str(id)
 
-        app._fix_async()
-
         client = app.test_client()
-        response = client.get('/abc/123')
+        response = await client.get('/abc/123')
         assert response.data == b'123456'
 
-    def test_decorator_method_with_args(self):
+    @async_test
+    async def test_decorator_method_with_args(self):
         class Foo:
             def __init__(self, value):
                 self.value = value
@@ -101,8 +100,6 @@ class TestPatch(unittest.TestCase):
         async def abc(id):
             return str(id)
 
-        app._fix_async()
-
         client = app.test_client()
-        response = client.get('/abc/123')
+        response = await client.get('/abc/123')
         assert response.data == b'123456789'

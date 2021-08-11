@@ -3,10 +3,12 @@ import os
 import unittest
 from unittest import mock
 import aioflask
+from .utils import async_test
 
 
 class TestTemplating(unittest.TestCase):
-    def test_template_strng(self):
+    @async_test
+    async def test_template_strng(self):
         app = aioflask.Flask(__name__)
         app.secret_key = 'secret'
 
@@ -20,13 +22,12 @@ class TestTemplating(unittest.TestCase):
             return await aioflask.render_template_string(
                 '{{ g.x }}{{ session.y }}')
 
-        app._fix_async()
-
         client = app.test_client()
-        response = client.get('/')
+        response = await client.get('/')
         assert response.data == b'foobar'
 
-    def test_template(self):
+    @async_test
+    async def test_template(self):
         app = aioflask.Flask(__name__)
         app.secret_key = 'secret'
 
@@ -39,8 +40,6 @@ class TestTemplating(unittest.TestCase):
         async def async_route():
             return await aioflask.render_template('template.html')
 
-        app._fix_async()
-
         client = app.test_client()
-        response = client.get('/')
+        response = await client.get('/')
         assert response.data == b'foobar'

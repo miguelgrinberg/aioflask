@@ -3,10 +3,12 @@ import os
 import unittest
 from unittest import mock
 import aioflask
+from .utils import async_test
 
 
 class TestApp(unittest.TestCase):
-    def test_app(self):
+    @async_test
+    async def test_app(self):
         app = aioflask.Flask(__name__)
 
         @app.route('/async')
@@ -20,15 +22,14 @@ class TestApp(unittest.TestCase):
             assert aioflask.current_app._get_current_object() == app
             return 'sync'
 
-        app._fix_async()
-
         client = app.test_client()
-        response = client.get('/async')
+        response = await client.get('/async')
         assert response.data == b'async'
-        response = client.get('/sync')
+        response = await client.get('/sync')
         assert response.data == b'sync'
 
-    def test_g(self):
+    @async_test
+    async def test_g(self):
         app = aioflask.Flask(__name__)
         app.secret_key = 'secret'
 
@@ -59,18 +60,16 @@ class TestApp(unittest.TestCase):
             rv.data += f'/{aioflask.g.asyncvar}-{aioflask.g.syncvar}'.encode()
             return rv
 
-        app._fix_async()
-
         client = app.test_client()
-        response = client.get('/session')
+        response = await client.get('/session')
         assert response.data == b'None-None/async-sync'
-        response = client.get('/async')
+        response = await client.get('/async')
         assert response.data == b'async-sync/async-sync'
-        response = client.get('/session')
+        response = await client.get('/session')
         assert response.data == b'async-None/async-sync'
-        response = client.get('/sync')
+        response = await client.get('/sync')
         assert response.data == b'async-sync/async-sync'
-        response = client.get('/session')
+        response = await client.get('/session')
         assert response.data == b'async-sync/async-sync'
 
     @mock.patch('aioflask.app.uvicorn')

@@ -1,6 +1,7 @@
 from flask.testing import *
 from flask.testing import FlaskClient as OriginalFlaskClient, \
     FlaskCliRunner as OriginalFlaskCliRunner
+from flask import _request_ctx_stack
 from werkzeug.test import run_wsgi_app
 from greenletio import async_
 
@@ -44,6 +45,27 @@ class FlaskClient(OriginalFlaskClient):
 
     async def trace(self, *args, **kwargs):
         return await async_(super().trace)(*args, **kwargs)
+
+    async def __aenter__(self):
+        if self.preserve_context:
+            raise RuntimeError("Cannot nest client invocations")
+        self.preserve_context = True
+        return self
+
+    async def __aexit__(self, exc_type, exc_value, tb):
+        self.preserve_context = False
+
+        # Normally the request context is preserved until the next
+        # request in the same thread comes. When the client exits we
+        # want to clean up earlier. Pop request contexts until the stack
+        # is empty or a non-preserved one is found.
+        while True:
+            top = _request_ctx_stack.top
+
+            if top is not None and top.preserved:
+                await top.apop()
+            else:
+                break
 
 
 class FlaskCliRunner(OriginalFlaskCliRunner):

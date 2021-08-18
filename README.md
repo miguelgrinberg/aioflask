@@ -35,6 +35,9 @@ There are also changes outside of the `Flask` class:
   server.
 - The `render_template()` and `render_template_string()` functions are
   asynchronous and must be awaited.
+- The context managers for the Flask application and request contexts are
+  async.
+- The test client and test CLI runner use coroutines.
 
 ## Example
 

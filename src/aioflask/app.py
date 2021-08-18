@@ -7,11 +7,11 @@ from flask.app import Flask as OriginalFlask
 from flask import cli
 from flask.globals import _app_ctx_stack, _request_ctx_stack
 from flask.helpers import get_debug_flag, get_env, get_load_dotenv
-from greenletio import await_, async_
+from greenletio import await_
 import uvicorn
 from .asgi import WsgiToAsgiInstance
 from .cli import show_server_banner, AppGroup
-from .ctx import AppContext
+from .ctx import AppContext, RequestContext
 from .testing import FlaskClient, FlaskCliRunner
 
 
@@ -31,18 +31,16 @@ class Flask(OriginalFlask):
         def wrapped(*args, **kwargs):
             appctx = _app_ctx_stack.top
             reqctx = _request_ctx_stack.top
-            if reqctx:
-                reqctx = reqctx.copy()
 
             async def _coro():
                 # app context is push internally to avoid changing reference
                 # counts and emitting duplicate signals
                 _app_ctx_stack.push(appctx)
                 if reqctx:
-                    reqctx.push()
+                    _request_ctx_stack.push(reqctx)
                 ret = await func(*args, **kwargs)
                 if reqctx:
-                    reqctx.pop()
+                    _request_ctx_stack.pop()
                 _app_ctx_stack.pop()
                 return ret
 
@@ -52,6 +50,9 @@ class Flask(OriginalFlask):
 
     def app_context(self):
         return AppContext(self)
+
+    def request_context(self, environ):
+        return RequestContext(self, environ)
 
     def _fix_async(self):  # pragma: no cover
         self.async_fixed = True

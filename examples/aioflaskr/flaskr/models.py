@@ -2,14 +2,16 @@ from werkzeug.security import check_password_hash
 from werkzeug.security import generate_password_hash
 from aioflask import url_for
 from aioflask.patched.flask_login import UserMixin
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, func
+from sqlalchemy.orm import relationship
 
 from flaskr import db
 
 
 class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String, unique=True, nullable=False)
-    password_hash = db.Column(db.String, nullable=False)
+    id = Column(Integer, primary_key=True)
+    username = Column(String, unique=True, nullable=False)
+    password_hash = Column(String, nullable=False)
 
     @property
     def password(self):
@@ -25,17 +27,17 @@ class User(UserMixin, db.Model):
 
 
 class Post(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    author_id = db.Column(db.ForeignKey(User.id), nullable=False)
-    created = db.Column(
-        db.DateTime, nullable=False, server_default=db.func.current_timestamp()
+    id = Column(Integer, primary_key=True)
+    author_id = Column(ForeignKey(User.id), nullable=False)
+    created = Column(
+        DateTime, nullable=False, server_default=func.current_timestamp()
     )
-    title = db.Column(db.String, nullable=False)
-    body = db.Column(db.String, nullable=False)
+    title = Column(String, nullable=False)
+    body = Column(String, nullable=False)
 
     # User object backed by author_id
     # lazy="joined" means the user is returned with the post in one query
-    author = db.relationship(User, lazy="joined", backref="posts")
+    author = relationship(User, lazy="joined", backref="posts")
 
     @property
     def update_url(self):

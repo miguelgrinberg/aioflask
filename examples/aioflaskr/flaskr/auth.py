@@ -6,6 +6,7 @@ from aioflask import request
 from aioflask import url_for
 from aioflask.patched.flask_login import login_user
 from aioflask.patched.flask_login import logout_user
+from sqlalchemy.exc import IntegrityError
 
 from flaskr import db, login
 from flaskr.models import User
@@ -38,7 +39,7 @@ async def register():
             try:
                 db.session.add(User(username=username, password=password))
                 await db.session.commit()
-            except db.IntegrityError:
+            except IntegrityError:
                 # The username was already taken, which caused the
                 # commit to fail. Show a validation error.
                 error = f"User {username} is already registered."
@@ -59,8 +60,8 @@ async def login():
         password = request.form["password"]
         error = None
 
-        query = db.select(User).filter_by(username=username)
-        user = (await db.session.execute(query)).scalar()
+        query = User.select().filter_by(username=username)
+        user = await db.session.scalar(query)
 
         if user is None:
             error = "Incorrect username."

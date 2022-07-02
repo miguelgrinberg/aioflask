@@ -12,7 +12,7 @@ async def test_register(client, app):
     # test that successful registration redirects to the login page
     response = await client.post("/auth/register",
                                  data={"username": "a", "password": "a"})
-    assert "http://localhost/auth/login" == response.headers["Location"]
+    assert "/auth/login" == response.headers["Location"]
 
     # test that the user was inserted into the database
     async with app.app_context():
@@ -49,7 +49,7 @@ async def test_login(client, auth):
 
     # test that successful login redirects to the index page
     response = await auth.login()
-    assert response.headers["Location"] == "http://localhost/"
+    assert response.headers["Location"] == "/"
 
     # login request set the user_id in the session
     # check that the user is loaded from the session

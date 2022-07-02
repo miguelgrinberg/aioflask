@@ -25,8 +25,7 @@ async def test_index(client, auth):
 @pytest.mark.parametrize("path", ("/create", "/1/update", "/1/delete"))
 async def test_login_required(client, path):
     response = await client.post(path)
-    assert response.headers["Location"].startswith(
-        "http://localhost/auth/login?next=")
+    assert response.headers["Location"].startswith("/auth/login?next=")
 
 
 @pytest.mark.asyncio
@@ -84,7 +83,7 @@ async def test_create_update_validate(client, auth, path):
 async def test_delete(client, auth, app):
     await auth.login()
     response = await client.post("/1/delete")
-    assert response.headers["Location"] == "http://localhost/"
+    assert response.headers["Location"] == "/"
 
     async with app.app_context():
         assert (await db.session.get(Post, 1)) is None

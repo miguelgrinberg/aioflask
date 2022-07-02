@@ -50,8 +50,9 @@ class RequestContext(OriginalRequestContext):
 
         try:
             if not self._implicit_app_ctx_stack:
-                self.preserved = False
-                self._preserved_exc = None
+                if hasattr(self, 'preserved'):  # Flask < 2.2
+                    self.preserved = False
+                    self._preserved_exc = None
                 if exc is _sentinel:  # pragma: no cover
                     exc = sys.exc_info()[1]
 
@@ -84,11 +85,14 @@ class RequestContext(OriginalRequestContext):
             ), f"Popped wrong request context. ({rv!r} instead of {self!r})"
 
     async def aauto_pop(self, exc):
-        if self.request.environ.get("flask._preserve_context") or (
-            exc is not None and self.app.preserve_context_on_exception
-        ):  # pragma: no cover
-            self.preserved = True
-            self._preserved_exc = exc
+        if hasattr(self, 'preserved'):  # Flask < 2.2
+            if self.request.environ.get("flask._preserve_context") or (
+                exc is not None and self.app.preserve_context_on_exception
+            ):  # pragma: no cover
+                self.preserved = True
+                self._preserved_exc = exc
+            else:
+                await self.apop(exc)
         else:
             await self.apop(exc)
 

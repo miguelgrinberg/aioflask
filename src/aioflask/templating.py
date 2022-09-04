@@ -1,7 +1,7 @@
 from flask.templating import *
-from flask.templating import _app_ctx_stack, before_render_template, \
+from flask.templating import before_render_template, \
     template_rendered
-
+from flask.globals import __app_ctx_stack
 
 async def _render(template, context, app):
     """Renders the template and fires the signal"""
@@ -21,7 +21,7 @@ async def render_template(template_name_or_list, **context):
     :param context: the variables that should be available in the
                     context of the template.
     """
-    ctx = _app_ctx_stack.top
+    ctx = __app_ctx_stack.top
     ctx.app.update_template_context(context)
     return await _render(
         ctx.app.jinja_env.get_or_select_template(template_name_or_list),
@@ -38,7 +38,7 @@ async def render_template_string(source, **context):
     :param context: the variables that should be available in the
                     context of the template.
     """
-    ctx = _app_ctx_stack.top
+    ctx = __app_ctx_stack.top
     ctx.app.update_template_context(context)
     return await _render(ctx.app.jinja_env.from_string(source), context,
                          ctx.app)

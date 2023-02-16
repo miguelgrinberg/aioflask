@@ -15,4 +15,4 @@ redis==3.5.3
 uvicorn==0.11.6
 uvloop==0.14.0
 websockets==8.1
-Werkzeug==1.0.1
+Werkzeug==2.2.3

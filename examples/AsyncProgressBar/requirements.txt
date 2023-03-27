@@ -11,7 +11,7 @@ httptools==0.1.1
 itsdangerous==1.1.0
 Jinja2==2.11.2
 MarkupSafe==1.1.1
-redis==3.5.3
+redis==4.5.3
 uvicorn==0.11.6
 uvloop==0.14.0
 websockets==8.1

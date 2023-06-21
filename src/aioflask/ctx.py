@@ -2,9 +2,9 @@ import sys
 from greenletio import async_
 from flask.ctx import *
 from flask.ctx import AppContext as OriginalAppContext, \
-    RequestContext as OriginalRequestContext, _sentinel, _app_ctx_stack, \
-    _request_ctx_stack, appcontext_popped
-
+    RequestContext as OriginalRequestContext, _sentinel, appcontext_popped
+from flask.globals import __app_ctx_stack
+from flask.globals import __request_ctx_stack
 
 class AppContext(OriginalAppContext):
     async def apush(self):
@@ -21,13 +21,13 @@ class AppContext(OriginalAppContext):
 
                 @async_
                 def do_teardown_async():
-                    _app_ctx_stack.push(self)
+                    __app_ctx_stack.push(self)
                     self.app.do_teardown_appcontext(exc)
-                    _app_ctx_stack.pop()
+                    __app_ctx_stack.pop()
 
                 await do_teardown_async()
         finally:
-            rv = _app_ctx_stack.pop()
+            rv = __app_ctx_stack.pop()
         assert rv is self, \
             f"Popped wrong app context.  ({rv!r} instead of {self!r})"
         appcontext_popped.send(self.app)
@@ -45,11 +45,11 @@ class RequestContext(OriginalRequestContext):
         self.push()
 
     async def apop(self, exc=_sentinel):
-        app_ctx = self._implicit_app_ctx_stack.pop()
+        app_ctx = self._implicit__app_ctx_stack.pop()
         clear_request = False
 
         try:
-            if not self._implicit_app_ctx_stack:
+            if not self._implicit__app_ctx_stack:
                 if hasattr(self, 'preserved'):  # Flask < 2.2
                     self.preserved = False
                     self._preserved_exc = None
@@ -58,9 +58,9 @@ class RequestContext(OriginalRequestContext):
 
                 @async_
                 def do_teardown():
-                    _request_ctx_stack.push(self)
+                    __request_ctx_stack.push(self)
                     self.app.do_teardown_request(exc)
-                    _request_ctx_stack.pop()
+                    __request_ctx_stack.pop()
 
                 await do_teardown()
 
@@ -69,7 +69,7 @@ class RequestContext(OriginalRequestContext):
                     request_close()
                 clear_request = True
         finally:
-            rv = _request_ctx_stack.pop()
+            rv = __request_ctx_stack.pop()
 
             # get rid of circular dependencies at the end of the request
             # so that we don't require the GC to be active.
